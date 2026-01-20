@@ -1,4 +1,4 @@
 Flask
 pyjwkest
 pyopenssl
-jwt
+PyJWT
