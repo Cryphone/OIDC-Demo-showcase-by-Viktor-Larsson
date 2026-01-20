@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<!--
+  ~ Copyright (C) 2016 Curity AB.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OIDC Demo</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"
+            integrity="sha256-/SIrNqv8h6QGKDuNoLGA4iret+kyesCkHGzVUUV0shc=" crossorigin="anonymous"></script>
+
+    <style type="text/css">
+        .navbar img {
+            max-width: 500px;
+        }
+
+        .navbar {
+            text-align: center;
+        }
+
+        .label {
+            font-size: 90%;
+            line-height: 1.2;
+            font-weight: 400;
+        }
+
+        .mb {
+            margin-bottom: 12px;
+        }
+
+        LABEL {
+            font-weight: normal;
+        }
+
+        #response_type_label {
+            padding-left: 0;
+            padding-bottom: 0.5em;
+        }
+    </style>
+
+    <style>
+        .dropdown-container {
+        width: 95%;
+        margin: 0 auto;
+        border: 1px solid #000;
+        overflow-y: scroll;
+        transition: max-height 0.25s ease;
+        max-height: 40px; /* closed height */
+        }
+
+        .dropdown-container.open {
+        max-height: 500px; /* open height (adjust if needed) */
+        }
+
+        .dropdown-header {
+        cursor: pointer;
+        padding: 10px;
+        background: #f0f0f0;
+        }
+
+        .dropdown-content {
+        padding: 10px;
+        }
+    </style>
+    
+    <script type="application/javascript">
+        function prettyJson(text) {
+            var token;
+            try {
+                token = JSON.parse(text);
+            } catch (e) {
+                // not json
+                return;
+            }
+            return JSON.stringify(token, null, 2);
+        }
+
+        function handleNonCodeFlowResponse() {
+            console.log("OK");
+            var params = {};
+            window.location.hash.substring(1).split('&').map(function (it) {
+                var parts = it.split('=');
+                params[parts[0]] = parts[1]
+            });
+            console.log(params);
+            $.post("callback-js", params, function (data) {
+                console.log(data);
+                console.log(params["id_token"]);
+                document.location = "/";
+            });
+        }
+
+        if (window.location.hash) {
+            handleNonCodeFlowResponse();
+        }
+
+        $('document').ready(function () {
+            $('.list-group li').click(function () {
+                $(this).next().toggleClass('hidden');
+            });
+
+            var idPayload = $('#id-token-payload').text();
+            if (idPayload !== '') {
+                var idToken = JSON.parse(idPayload);
+                if (typeof idToken['sub'] !== 'undefined') {
+                    $('#sessionname').text(idToken['sub']);
+                }
+            }
+            else {
+                $('.welcome').addClass('hidden');
+            }
+
+            var apiStatusCode = $('#api-response-status-code');
+            if (apiStatusCode.length > 0 && apiStatusCode.text().trim() === '200') {
+                apiStatusCode.addClass('label-success');
+            } else {
+                apiStatusCode.addClass('label-danger').removeClass('label-success');
+                $('#api-response-data').addClass('alert').addClass('alert-danger');
+            }
+
+            $('.btn').click(function (event) {
+                event.stopPropagation();
+            });
+
+            $('.json').each(function () {
+                $(this).text(prettyJson($(this).text()));
+                $(this).removeClass('hidden');
+            });
+        });
+
+    </script>
+</head>
+<body>
+  <nav class="navbar navbar-default">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="/">
+          Store Home
+        </a>
+      </div>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="/logout">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+<div class="container-fluid" style="display:flex; border:0; width:100%;">
+    <div style="padding-left: 10%;">
+        <p>First name: <span id="firstNameText">{{ session.first_name }}</span>, <br>
+        Surname: <span id="surnameText">{{ session.surname }}</span></p>
+
+        <p id="myText" style="filter: blur(4px); cursor: pointer;" onclick="this.style.filter = this.style.filter === 'none' ? 'blur(4px)' : 'none';">
+        email: <span id="emailText">{{ session.email }}</span>,<br>
+        phone: <span id="phoneText">{{ session.phone }}</span>
+        </p>
+
+        <p>balance: <span id="balanceText">{{ session.balance }}</span></p>
+        <button onclick="window.location='http://localhost:8080/realms/testrealm/account?referrer=testclient&referrer_uri=https%3A%2F%2Flocalhost%3A8000'">
+            Edit Profile
+        </button>
+    </div>
+</div>
+<div class="container-fluid" style="display:flex; border:0; width:100%;">
+    <div style="display:flex; gap:10%; width:100%; justify-content: center;">
+    <div class="product" data-price="1600" style="border:1px solid #000; padding:8px; display:flex; flex-direction:column; align-items:center;">
+        <img src="{{ url_for('static', filename='lawn-mower-3488879_1280.jpg') }}" alt="img1" style="width:200px; height:200px; object-fit:cover; border-radius:8px;">
+        <h5>A lawnmower <br> Cost:1600</h45>
+        <div class="cart" style="margin-top:8px; width:100%; display:flex; justify-content:center;">
+            <button class="addBtn">Add</button>
+        </div>
+    </div>
+
+    <div class="product" data-price="2000" style="border:1px solid #000; padding:8px; display:flex; flex-direction:column; align-items:center;">
+        <img src="{{ url_for('static', filename='john-deere-3431937_960_720.jpg') }}" alt="img2" style="width:200px; height:200px; object-fit:cover; border-radius:8px;">
+        <h5>A slightly fancier lawnmower <br> Cost:2000</h5>
+        <div class="cart" style="margin-top:8px; width:100%; display:flex; justify-content:center;">
+        <button class="addBtn">Add</button>
+        </div>
+    </div>
+    </div>
+</div>
+<div class="container-fluid center" style="padding-left:48%;">
+    <p>Total: <span id="total">0</span></p>
+    <button id="checkoutBtn" onclick="checkout()">Checkout</button>
+</div>
+
+
+<!-- Loader / Popup -->
+<div id="loaderOverlay"
+     style="display:none;
+            position:fixed;
+            top:0; left:0;
+            width:100%; height:100%;
+            background:rgba(0,0,0,0.4);
+            justify-content:center;
+            align-items:center;
+            z-index:9999;">
+
+    <div style="background:#fff;
+                padding:20px;
+                border-radius:8px;
+                text-align:center;
+                min-width:200px;">
+        <p id="loaderText">Processing purchase...</p>
+        <button id="closeLoaderBtn"
+                style="display:none;"
+                onclick="closeLoader()">Close</button>
+    </div>
+</div>
+
+
+
+<div class="dropdown-container" id="dropdown" style="margin-top: 10px;">
+    <div class="dropdown-header" onclick="toggleDropdown()">
+        Click to see/hide tokens
+    </div>
+    <div class="container-fluid">
+        {% if error %}
+            <div class="row">
+                <div class="col-md-3"></div>
+                <div class="col-md-6">
+                    <p class="text-danger">{{ error }}</p>
+                </div>
+                <div class="col-md-3"></div>
+            </div>
+        {% endif %}
+        <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+
+                    <ul class="list-group">
+                        {% if session.api_response %}
+                            <li class="list-group-item">
+                                API Response
+                                <span class="label pull-right" id="api-response-status-code">
+                                {{ session.api_response.code | e }}
+                                </span>
+                            </li>
+                            <div>
+                                <pre class="json hidden" id="api-response-data">{{ session.api_response['data'] | e }}</pre>
+                            </div>
+                        {% endif %}
+
+                        {% if session.front_end_id_token %}
+                            <li class="list-group-item">Front-end ID Token</li>
+                            <div>
+                                <pre class="json hidden">{{ session.front_end_id_token_json[0] | e }}</pre>
+                                <pre class="json hidden" id="id-token-payload">{{ session.front_end_id_token_json[1] | e }}</pre>
+                                <pre>{{ session.front_end_id_token }}</pre>
+                            </div>
+                        {% endif %}
+
+                        {% if session.id_token %}
+                            <li class="list-group-item">Back-end ID Token</li>
+                            <div>
+                                <pre class="json hidden">{{ session.id_token_json[0] | e }}</pre>
+                                <pre class="json hidden" id="id-token-payload">{{ session.id_token_json[1] | e }}</pre>
+                                <pre>{{ session.id_token }}</pre>
+                            </div>
+                        {% endif %}
+
+                        {%  if session.front_end_access_token %}
+                            <li class="list-group-item">Front-end Access Token
+                                <a href="/revoke?front_end_access_token" class="btn btn-xs btn-danger pull-right">revoke</a>
+                            </li>
+                            <div>
+                                {% if session.front_end_access_token_json %}
+                                    <pre class="json hidden">{{ session.front_end_access_token_json[0] | e }}</pre>
+                                    <pre class="json hidden">{{ session.front_end_access_token_json[1] | e }}</pre>
+                                    <pre>{{ session.front_end_access_token }}</pre>
+                                {% else %}
+                                    <pre>{{ session.front_end_access_token | e }}</pre>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        {% if session.access_token %}
+                            <li class="list-group-item">Back-end Access Token
+                                <a href="/revoke?back_end_access_token" class="btn btn-xs btn-danger pull-right" style="margin-left: 4px">revoke</a>
+
+                                {% if session.refresh_token %}
+                                    <a href="/refresh" class="btn btn-xs btn-info pull-right" id="refresh">refresh</a>
+                                {% endif %}
+                            </li>
+                            <div>
+                                {% if session.access_token_json %}
+                                    <pre class="json hidden">{{ session.access_token_json[0] | e }}</pre>
+                                    <pre class="json hidden">{{ session.access_token_json[1] | e }}</pre>
+                                    <pre>{{ session.access_token }}</pre>
+                                {% else %}
+                                    <pre>{{ session.access_token | e }}</pre>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
+                        {% if session.refresh_token %}
+                            <div>
+                                <li class="list-group-item">Back-end Refresh Token
+                                    <a href="/revoke?refresh_token" class="btn btn-xs btn-danger pull-right">revoke</a>
+                                </li>
+                                <pre>{{ session.refresh_token | e }}</pre>
+                            </div>
+                        {% endif %}
+                    </ul>
+            </div>
+            <div class="col-md-3"></div>
+        </div>
+        <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+                {% if session %}
+                {% if not error and (session.access_token or session.front_end_access_token) %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Request data from an API</div>
+                        <div class="panel-body">
+                            <div class="btn-group btn-group-justified mb" role="group">
+                                {% if session.front_end_access_token and session.access_token %}
+                                    <a href="/call-api?front-end" class="btn btn-default" type="button" style="right: 4px; border-radius: 4px">Using Front-end Access Token</a>
+                                    <a href="/call-api" class="btn btn-default" type="button" style="left: 4px; border-radius: 4px">Using Back-end Access Token</a>
+                                {% elif session.access_token %}
+                                    <a href="/call-api" class="btn btn-default" type="button">Using Back-end Access Token</a>
+                                {% else %}
+                                    <a href="/call-api?front-end" class="btn btn-default" type="button">Using Front-end Access Token</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {%  endif %}
+                    <form action="/start-login" method="get">
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="acr" id="acr" placeholder="Authentication class context reference (ACR)">
+                        </div>
+                        <div class="radio-inline" id="response_type_label">
+                            Response Type
+                        </div>
+                        <div class="radio-inline">
+                            <label><input type="radio" name="responseType" value="code" {{ "checked" if flow == "code" }}>code</label>
+                        </div>
+                        <div class="radio-inline">
+                            <label><input type="radio" name="responseType" value="code id_token" {{  "checked" if flow == "code id_token" }}>code + id_token</label>
+                        </div>
+                        <div class="radio-inline">
+                            <label><input type="radio" name="responseType" value="code token" {{ "checked" if flow == "code token" }}>code + token</label>
+                        </div>
+                        <div class="radio-inline">
+                            <label><input type="radio" name="responseType" value="code id_token token" {{ "checked" if flow == "code id_token token" }}>code + token + id_token</label>
+                        </div>
+                        <div class="checkbox" style="margin-top: 0">
+                            <label><input type="checkbox" name="forceAuthN">Force authentication</label>
+                        </div>
+                        <div class="checkbox">
+                            <label><input type="checkbox" name="forceConsent">Force consent</label>
+                        </div>
+                        <div class="checkbox">
+                            <label><input type="checkbox" name="allowConsentOptionDeselection" checked>Allow deselection of consent options</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="ui_locales" class="form-control" placeholder="Space-separated list of UI Locales (e.g., 'en-US sv')">
+                        </div>
+                        <div class="form-group">
+                            <input type="number" min="10" max="3600" name="max_age" class="form-control" placeholder="Maximum age of SSO session">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="scope" id="scope" placeholder="Space-separated list of scopes (e.g., openid)">
+                        </div>
+                        <div class="form-group">
+                            <label for="claims">Claims</label>
+                            <textarea name="claims" id="claims" rows="5" class="json form-control">
+                                {
+                                    "id_token": {
+
+                                    },
+                                    "userinfo": {
+                                    }
+                                }
+                            </textarea>
+                        </div>
+
+                        <div style="margin-bottom: 1em">
+                            <button type="submit" class="btn btn-default btn-group-justified mb">Restart Login</button>
+                        </div>
+                    </form>                
+                {% endif %}
+            </div>
+            <div class="col-md-3"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+  function toggleDropdown() {
+    document.getElementById("dropdown").classList.toggle("open");
+  }
+</script>
+
+<script>
+  // Step 3: refreshSessionData
+  function refreshSessionData() {
+    fetch("/session-data")
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("firstNameText").innerText = data.first_name;
+        document.getElementById("surnameText").innerText = data.surname;
+        document.getElementById("emailText").innerText = data.email;
+        document.getElementById("phoneText").innerText = data.phone;
+        document.getElementById("balanceText").innerText = data.balance;
+
+        limit = parseInt(data.balance, 10);
+        updateCheckoutState();
+      });
+  }
+
+  window.addEventListener("load", refreshSessionData);
+</script>
+
+<script>
+function checkout() {
+    const total = parseInt(document.getElementById('total').innerText, 10);
+
+    document.getElementById('loaderOverlay').style.display = 'flex';
+    document.getElementById('loaderText').innerText = 'Processing purchase...';
+    document.getElementById('closeLoaderBtn').style.display = 'none';
+
+    fetch('/purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ price: total })
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Purchase failed');
+        return response.json();
+    })
+    .then(data => {
+        document.getElementById('loaderText').innerText = 'Purchase completed!';
+        document.getElementById('closeLoaderBtn').style.display = 'inline-block';
+        document.getElementById('balanceText').innerText = data.balance;
+        const balanceEl = document.getElementById('balanceText');
+        balanceEl.innerText = data.balance;
+
+        // update limit variable
+        limit = parseInt(balanceEl.textContent, 10);
+    })
+    .catch(() => {
+        document.getElementById('loaderText').innerText = 'Purchase failed';
+        document.getElementById('closeLoaderBtn').style.display = 'inline-block';
+    });
+}
+
+function closeLoader() {
+    document.getElementById('loaderOverlay').style.display = 'none';
+}
+</script>
+
+
+<script>
+  const limitEl = document.getElementById("balanceText");
+  let limit = parseInt(limitEl.textContent, 10); // change this as needed
+  let total = 0;
+
+  const totalEl = document.getElementById("total");
+  const checkoutBtn = document.getElementById("checkoutBtn");
+
+  const updateCheckoutState = () => {
+    checkoutBtn.style.backgroundColor = total > limit ? "gray" : "";
+    checkoutBtn.disabled = total > limit;
+  };
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.classList.contains("addBtn")) return;
+
+    const cart = e.target.closest(".cart");
+    const product = cart.closest(".product");
+    const price = parseInt(product.dataset.price);
+
+    total += price;
+    totalEl.textContent = total;
+
+    cart.innerHTML = `
+      <button class="minusBtn">-</button>
+      <span class="count">1</span>
+      <button class="plusBtn">+</button>
+    `;
+
+    updateCheckoutState();
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.classList.contains("plusBtn") && !e.target.classList.contains("minusBtn")) return;
+
+    const cart = e.target.closest(".cart");
+    const product = cart.closest(".product");
+    const price = parseInt(product.dataset.price);
+    const countEl = cart.querySelector(".count");
+
+    let count = parseInt(countEl.textContent);
+
+    if (e.target.classList.contains("plusBtn")) {
+      count++;
+      total += price;
+    }
+
+    if (e.target.classList.contains("minusBtn")) {
+      count--;
+      total -= price;
+    }
+
+    if (count <= 0) {
+      cart.innerHTML = `<button class="addBtn">Add</button>`;
+    } else {
+      countEl.textContent = count;
+    }
+
+    totalEl.textContent = total;
+    updateCheckoutState();
+  });
+
+  updateCheckoutState();
+</script>
+
+<div class="row text-center" style="align-content: right;">
+    <p>A teeny tiny test by</p>
+    <p>Viktor Larsson, ungraduated but fully educated civilengineer in Data Science, with a master profile in Artificial Intelligence</p>
+    <a href="mailto:viktor_x1@hotmail.com">viktor_x1@hotmail.com</a>
+</div>
+</body>
+</html>
