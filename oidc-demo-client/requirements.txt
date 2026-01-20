@@ -2,3 +2,4 @@ Flask
 pyjwkest
 pyopenssl
 PyJWT
+cryptography==41.0.7
