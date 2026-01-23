@@ -34,4 +34,4 @@ And the app url is https://localhost:8000
 
 Try opening them up in your browser.
 
-
+Own edits and additions to applications/files have been commented in, uncommented code-snippets come from the public Curity OIDC for python demo. A short summary would be, session and payment management in the second half of app.py, updating to keycloak (the IdP), slight edits here and there to read in user info, reworked and remade html pages keeping json segments incase those were of interest for future use.
