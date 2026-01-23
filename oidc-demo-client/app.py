@@ -48,6 +48,8 @@ class UserSession:
     front_end_id_token = None
     front_end_id_token_json = None
     front_end_access_token = None
+    
+        # Custom Addition-------------------------------------------------------------------------
     balance = None
     first_name = None
     surname = None
@@ -55,6 +57,7 @@ class UserSession:
     phone = None
     user_id = None
 
+    # Custom Addition-------------------------------------------------------------------------
 @_app.before_request
 def refresh_session():
     if "user_id" not in session:
@@ -389,6 +392,7 @@ def callback(params):
         except Exception as ve:
             return create_error("Unexpected exception: %s" % ve.message)
 
+            # Custom Addition-------------------------------------------------------------------------
         user.id_token = token_data['id_token']
         temp = jwt.decode(user.id_token, options={"verify_signature": False})
         user.balance = temp['Bank_Currency']
@@ -448,6 +452,7 @@ def load_config():
 def redirect_with_baseurl(path):
     return redirect(_config['base_url'] + path)
 
+    # Custom Addition-------------------------------------------------------------------------
 @_app.route("/session-data")
 def session_data():
     return jsonify({
@@ -457,7 +462,8 @@ def session_data():
         "phone": session.get("phone"),
         "balance": session.get("balance")
     })
-
+    
+    # Custom Addition-------------------------------------------------------------------------
 def get_user(user_id, token):
     url = f"http://localhost:8080/admin/realms/testrealm/users/{user_id}"
     headers = {"Authorization": f"Bearer {token}"}
@@ -465,6 +471,7 @@ def get_user(user_id, token):
     r.raise_for_status()
     return r.json()
 
+    # Custom Addition-------------------------------------------------------------------------
 def get_admin_token():
     url = "http://localhost:8080/realms/testrealm/protocol/openid-connect/token"
     data = {
@@ -476,6 +483,7 @@ def get_admin_token():
     r.raise_for_status()
     return r.json()["access_token"]
 
+    # Custom Addition-------------------------------------------------------------------------
 def update_balance(user_id, new_balance):
     token = get_admin_token()
 
@@ -494,7 +502,7 @@ def update_balance(user_id, new_balance):
     r = requests.put(url, json=user, headers=headers)
     return r.raise_for_status()
 
-
+    # Custom Addition-------------------------------------------------------------------------
 @_app.route("/purchase", methods=["POST"])
 def purchase():
     price = int(request.json["price"])
@@ -554,3 +562,4 @@ if __name__ == '__main__':
         _app.run('0.0.0.0', debug=debug, port=port)
     else:
         _app.run('0.0.0.0', debug=debug, port=port, ssl_context='adhoc')
+
