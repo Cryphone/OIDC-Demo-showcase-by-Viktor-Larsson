@@ -160,6 +160,7 @@
     </div>
   </nav>
 
+        <!-- Custom Addition start-------------------------------------------------------------------------  -->
 <div class="container-fluid" style="display:flex; border:0; width:100%;">
     <div style="padding-left: 10%;">
         <p>First name: <span id="firstNameText">{{ session.first_name }}</span>, <br>
@@ -230,6 +231,8 @@
     <div class="dropdown-header" onclick="toggleDropdown()">
         Click to see/hide tokens
     </div>
+  
+        <!-- Custom Addition end-------------------------------------------------------------------------  -->
     <div class="container-fluid">
         {% if error %}
             <div class="row">
@@ -403,6 +406,7 @@
     </div>
 </div>
 
+        <!-- Custom Addition start-------------------------------------------------------------------------  -->
 <script>
   function toggleDropdown() {
     document.getElementById("dropdown").classList.toggle("open");
@@ -538,5 +542,7 @@ function closeLoader() {
     <p>Viktor Larsson, ungraduated but fully educated civilengineer in Data Science, with a master profile in Artificial Intelligence</p>
     <a href="mailto:viktor_x1@hotmail.com">viktor_x1@hotmail.com</a>
 </div>
+        <!-- Custom Addition end-------------------------------------------------------------------------  -->
 </body>
 </html>
+
