@@ -78,16 +78,7 @@
     </script>
 </head>
 <body>
-<!-- <div class="navbar">
-    <br/>
-    <div class="row">
-        <div class="col-md-3"></div>
-        <div class="col-md-6">
-            <a href="/"><img src="{{ url_for('static', filename='oauth-logo.png') }}"/></a>
-        </div>
-        <div class="col-md-3"></div>
-    </div>
-</div> -->
+        <!-- Custom Addition start-------------------------------------------------------------------------  -->
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-12">
@@ -109,40 +100,16 @@
                     <a class="btn btn-info" role="button" href="/start-login">Sign In</a>
                 </div>
             </div>
-
-            <!-- {% if not registered %}
-                <p>Press the button below to register your unique client with the OAuth server: <span class="text-info">{{ server_name | e }}</span>.</p>
-                <a class="btn btn-info" role="button" href="/register">Register</a>
-            {% else %}
-                <p>Client <span class="text-info">{{ client_id }}</span> is <em>{{ "dynamically" if using_dynamic_registration else "statically" }}</em> registered.</p>
-                {% if using_dynamic_registration %}
-                    <p>
-                        <span class="btn btn-default" id="client-conf" role="button">Client Configuration &gt;</span>
-                        <a class="btn btn-default" href="/clean-registration" role="button">Delete Client Configuration</a>
-                        <pre class="json hidden">{{ client_data | tojson | safe }}</pre>
-                    </p>
-                {% endif %}
-                <p>
-                    Pressing <span class="text-info">Sign In</span> will redirect you to <span class="text-info">{{ authorization_endpoint | e }}</span> where you can authorize
-                    the application <span class="text-info">{{ client_data.client_name | e }}</span> to access your profile info. <small class="text-muted">The data will only be used to
-                    demonstrate the possibilities of the OpenID Connect
-                    protocol and will not be stored.</small></p>
-                    <a class="btn btn-info" role="button" href="/start-login">Sign In</a>
-                </p>
-            {% endif %} -->
         </div>
         <div class="col-md-3"></div>
     </div>
-    <!-- <div class="row text-center">
-        <p>Copyright Curity AB 2017-2021</p>
-        <a href="https://curity.io">Visit Curity.io for more information</a>
-    </div> -->
     <div class="row text-center" style="align-content: right;">
         <p>A teeny tiny test by</p>
         <p>Viktor Larsson, ungraduated but fully educated civilengineer in Data Science, with a master profile in Artificial Intelligence</p>
         <a href="mailto:viktor_x1@hotmail.com">viktor_x1@hotmail.com</a>
     </div>
-
 </div>
+        <!-- Custom Addition end-------------------------------------------------------------------------  -->
 </body>
 </html>
+
